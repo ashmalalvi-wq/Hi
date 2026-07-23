@@ -1,1 +1,3 @@
-testing some turn code; code is specifically for tank drive turns, havent yet figured out how to do both turning and moving forward at same time yet.
+- very basic move code added, commented out if needed to test
+- current code not working with xbox controller, unsure why
+- current iteration displays what the rate of change per 20 millis or so of the camera should be, but unsure why its not working beyond that.
