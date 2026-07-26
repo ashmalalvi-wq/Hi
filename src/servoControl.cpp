@@ -2,8 +2,8 @@
 #include <XboxSeriesXControllerESP32_asukiaaa.hpp>
 #include <ESP32Servo.h>
 
-const int servoPWM1 = 16;
-const int servoPWM2 = 17;
+const int servoPWM1 = 17;
+const int servoPWM2 = 18;
 
 const int MAX_ACCEL = 300;
 const int MIN_ACCEL = 50;
@@ -31,7 +31,7 @@ void controlServoMotorHor(int rightStick){
     int newPosition = currentPositionH + camHorizontalAccel;
     newPosition = constrain(newPosition, 500, 2500);
 
-    Serial0.print("Current Position: ");
+    Serial0.print("Current Position Horizontal: ");
     Serial0.println(currentPositionH);
     Serial0.print("New Position: ");
     Serial0.println(newPosition);
@@ -55,7 +55,7 @@ void controlServoMotorVer(int rightStick){
     int newPosition = currentPositionV + camVerticalAccel;
     newPosition = constrain(newPosition, 500, 2500);
 
-    Serial0.print("Current Position: ");
+    Serial0.print("Current Position Vertical: ");
     Serial0.println(currentPositionV);
     Serial0.print("New Position: ");
     Serial0.println(newPosition);
