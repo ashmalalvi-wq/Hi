@@ -1,19 +1,89 @@
 #include <Arduino.h>
 #include <XboxSeriesXControllerESP32_asukiaaa.hpp>
+#include <ESP32Servo.h>
 
-// Motor Channel A pins
+// Servo motor control pins
+const int servoPWM1 = 17;
+const int servoPWM2 = 18;
+//Servo motor accel limits
+const int MAX_ACCEL = 300;
+const int MIN_ACCEL = 50;
+
+// Move Motor Channel A pins
 const int PWM_A = 4;
 const int AIN_1 = 5;
 const int AIN_2 = 6;
 
-// Motor Channel B pins
+// Move Motor Channel B pins
 const int PWM_B = 7;
 const int BIN_1 = 15;
 const int BIN_2 = 16;
 
 const int MAX_PWM = 255;
 
+// Xbox controller object
 XboxSeriesXControllerESP32_asukiaaa::Core xboxController;
+
+// Servo motor objects
+Servo goBildaServoHor;
+Servo goBildaServoVer;
+
+// Track the servo's commanded position ourselves — don't rely on readMicroseconds()
+int currentPositionH = 1500;
+int currentPositionV = 1500;
+
+void controlServoMotorHor(int rightStick){
+    int camHorizontalAccel{};
+    if (rightStick > 38000){
+        camHorizontalAccel = map(rightStick, 38000, 65535, MIN_ACCEL, MAX_ACCEL);
+    }
+    else if (rightStick < 30000){
+        camHorizontalAccel = map(rightStick, 0, 30000, -MAX_ACCEL, -MIN_ACCEL);
+    }
+    else{
+        camHorizontalAccel = 0;
+    }
+
+    int newPosition = currentPositionH + camHorizontalAccel;
+    newPosition = constrain(newPosition, 500, 2500);
+
+    Serial0.print("Current Position Horizontal: ");
+    Serial0.println(currentPositionH);
+    Serial0.print("New Position: ");
+    Serial0.println(newPosition);
+
+    goBildaServoHor.writeMicroseconds(newPosition);
+    currentPositionH = newPosition; // update our own tracked state, not from the servo lib
+}
+void controlServoMotorVer(int rightStick){
+
+    int camVerticalAccel{};
+    if (rightStick > 38000){
+        camVerticalAccel = map(rightStick, 38000, 65535, MIN_ACCEL, MAX_ACCEL);
+    }
+    else if (rightStick < 30000){
+        camVerticalAccel = map(rightStick, 0, 30000, -MAX_ACCEL, -MIN_ACCEL);
+    }
+    else{
+        camVerticalAccel = 0;
+    }
+
+    int newPosition = currentPositionV + camVerticalAccel;
+    newPosition = constrain(newPosition, 500, 2500);
+
+    Serial0.print("Current Position Vertical: ");
+    Serial0.println(currentPositionV);
+    Serial0.print("New Position: ");
+    Serial0.println(newPosition);
+
+    goBildaServoVer.writeMicroseconds(newPosition);
+    currentPositionV = newPosition; // update our own tracked state, not from the servo lib
+}
+
+void controlServoMotor(int rightStickHor, int rightStickVert){
+    controlServoMotorHor(rightStickHor);
+    controlServoMotorVer(rightStickVert);
+}
 
 // Writes a signed speed (-MAX_PWM to MAX_PWM) to one motor.
 // speed > 0 = forward, speed < 0 = reverse, speed == 0 = active brake
@@ -72,7 +142,21 @@ void controlMotor(int triggerL, int triggerR, int leftStick){
 }
 
 void setup() {
-    Serial0.begin(115200);
+    //Serial0.begin(115200);
+
+    // Servo motor setup
+    ESP32PWM::allocateTimer(0);
+    ESP32PWM::allocateTimer(1);
+    goBildaServoHor.setPeriodHertz(50);
+    goBildaServoVer.setPeriodHertz(50);
+    goBildaServoHor.attach(servoPWM1, 500, 2500);
+    goBildaServoVer.attach(servoPWM2, 500, 2500);
+    goBildaServoHor.writeMicroseconds(1500);
+    goBildaServoVer.writeMicroseconds(1500);
+    currentPositionH = 1500; // keep this in sync with the initial write
+    currentPositionV = 1500; // keep this in sync with the initial write
+
+    // Move motor pin setup
     pinMode(PWM_A, OUTPUT);
     pinMode(AIN_1, OUTPUT);
     pinMode(AIN_2, OUTPUT);
@@ -81,6 +165,7 @@ void setup() {
     pinMode(BIN_1, OUTPUT);
     pinMode(BIN_2, OUTPUT);
 
+
     xboxController.begin();
 }
 
@@ -88,11 +173,14 @@ void loop() {
     xboxController.onLoop();
 
     if (xboxController.isConnected()) {
+        int joyStickRHori = xboxController.xboxNotif.joyRHori;
+        int joyStickRVert = xboxController.xboxNotif.joyRVert;
         int triggerL = xboxController.xboxNotif.trigLT;
         int triggerR = xboxController.xboxNotif.trigRT;
         int joyStickL = xboxController.xboxNotif.joyLHori;
 
         controlMotor(triggerL, triggerR, joyStickL);
+        controlServoMotor(joyStickRHori, joyStickRVert);
         delay(100);
     }
     else {

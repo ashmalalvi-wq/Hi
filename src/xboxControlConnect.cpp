@@ -6,6 +6,11 @@ const int PWM_A = 4;  // Speed control pin
 const int AIN_1 = 5;  // Direction pin 1
 const int AIN_2 = 6;  // Direction pin 2
 
+// Control pins for motor channel B
+const int PWM_B = 7;  // Speed control pin
+const int BIN_1 = 15;  // Direction pin 1
+const int BIN_2 = 16;  // Direction pin 2
+
 // Maximum PWM value for safe full speed
 const int MAX_PWM = 255*7.4/7.4; // Maximum PWM value for full speed
 
@@ -27,18 +32,30 @@ void controlMotor(int triggerL, int triggerR) {
         analogWrite(PWM_A, absSpeed);
         digitalWrite(AIN_1, HIGH);
         digitalWrite(AIN_2, LOW);
+
+        analogWrite(PWM_B, absSpeed);
+        digitalWrite(BIN_1, HIGH);
+        digitalWrite(BIN_2, LOW);
     } 
     else if (speed < 0) {
         // Reverse
         analogWrite(PWM_A, absSpeed);
         digitalWrite(AIN_1, LOW);
         digitalWrite(AIN_2, HIGH);
+
+        analogWrite(PWM_B, absSpeed);
+        digitalWrite(BIN_1, LOW);
+        digitalWrite(BIN_2, HIGH);
     } 
     else {
         // Active Short Brake (Stronger, cleaner stop for robotics than Coast)
         analogWrite(PWM_A, 0);
         digitalWrite(AIN_1, HIGH);
         digitalWrite(AIN_2, HIGH);
+
+        analogWrite(PWM_B, 0);
+        digitalWrite(BIN_1, HIGH);
+        digitalWrite(BIN_2, HIGH);
     }
 
     // // Correct Debug Printing
@@ -54,6 +71,11 @@ void setup() {
     pinMode(PWM_A, OUTPUT);
     pinMode(AIN_1, OUTPUT);
     pinMode(AIN_2, OUTPUT);
+
+    pinMode(PWM_B, OUTPUT);
+    pinMode(BIN_1, OUTPUT);
+    pinMode(BIN_2, OUTPUT);
+
     xboxController.begin();
 }
 
