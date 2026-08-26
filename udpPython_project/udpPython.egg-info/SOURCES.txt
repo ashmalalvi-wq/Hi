@@ -1,0 +1,10 @@
+dev-requirements.txt
+pyproject.toml
+tests/test_udpPython.py
+udpPython/__init__.py
+udpPython/__main__.py
+udpPython.egg-info/PKG-INFO
+udpPython.egg-info/SOURCES.txt
+udpPython.egg-info/dependency_links.txt
+udpPython.egg-info/requires.txt
+udpPython.egg-info/top_level.txt
